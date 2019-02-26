@@ -13,6 +13,8 @@ class Sell < ApplicationRecord
   
   validates :client, presence: true
 
+  before_save :set_total
+
   def fae_display_field
     id  
   end
@@ -20,4 +22,18 @@ class Sell < ApplicationRecord
   def self.for_fae_index
     order(:id)
   end
+
+  private
+    def set_total
+      total = 0
+      self.products.each {|p| total += p.price }
+      self.services.each {|s| total += s.price }
+
+      if self.discount.present?
+        total -= self.discount.value
+      end
+
+      total = (total >= 0) ? total : 0
+      self.total = total
+    end
 end
